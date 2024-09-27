@@ -2,10 +2,7 @@ package com.marcosvn3.jdbcTest.persistence;
 
 import com.marcosvn3.jdbcTest.persistence.entity.EmployeeEntity;
 import com.mysql.cj.jdbc.StatementImpl;
-import org.hibernate.annotations.processing.SQL;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -22,7 +19,7 @@ public class EmployeeDAO {
                 var connection = ConnectorUtil.getConnection();
                 var statement = connection.createStatement()
         ){
-            var sql = "INSERT INTO employees (nome_employee,salario_employee,aniversario_employee) values('"+
+            var sql = "INSERT INTO employees (nome,salario,aniversario) values('"+
                     entity.getNome()+"',"+
                     entity.getSalario()+","+
                     "'"+formatOffSetDateTime(entity.getAniversario())+"')";
@@ -41,10 +38,48 @@ public class EmployeeDAO {
     }
 
     // TODO:Metodo para atualizar as informações de um funcionário existente.
-    public void update(EmployeeEntity employee) {}
+    public void update(EmployeeEntity entity) {
+        try(
+                var connection = ConnectorUtil.getConnection();
+                var statement = connection.createStatement()
+        ){
+
+            var sql = "UPDATE employees set " +
+                    "nome= '"+entity.getNome()+"', " +
+                    "salario="+entity.getSalario()+", " +
+                    "aniversario='"+
+                    entity.getAniversario()+"' " +
+                    "where id="+entity.getId();
+            statement.executeUpdate(sql);
+
+            if (statement instanceof StatementImpl impl) {
+                entity.setId(impl.getLastInsertID());
+            }
+        }catch( Exception e){
+            e.printStackTrace();
+        }
+
+
+
+    }
 
     // TODO:Metodo para excluir um funcionário com base no seu ID.
-    public void delete(final long id) {}
+    public void delete(final long id) {
+        try(
+                var connection = ConnectorUtil.getConnection();
+                var statement = connection.createStatement()
+        ){
+
+            System.out.println(findById(id));
+
+            var sql = "DELETE FROM employees WHERE id="+id;
+            statement.executeUpdate(sql);
+
+            System.out.println("Deletado com sucesso!");
+        }catch( Exception e){
+            e.printStackTrace();
+        }
+    }
 
     // TODO:metodo para buscar todos os funcionários.
     public List<EmployeeEntity> findAll() {
@@ -60,9 +95,9 @@ public class EmployeeDAO {
             while(resultSet.next()) {
                 var entity = new EmployeeEntity();
                 entity.setId(resultSet.getLong("id"));
-                entity.setNome(resultSet.getString("nome_employee"));
-                entity.setSalario(resultSet.getBigDecimal("salario_employee"));
-                var aniversarioInstant = resultSet.getTimestamp("aniversario_employee").toInstant();
+                entity.setNome(resultSet.getString("nome"));
+                entity.setSalario(resultSet.getBigDecimal("salario"));
+                var aniversarioInstant = resultSet.getTimestamp("aniversario").toInstant();
                 entity.setAniversario(OffsetDateTime.ofInstant(aniversarioInstant, ZoneOffset.UTC));
 
                 entities.add(entity);
@@ -84,10 +119,9 @@ public class EmployeeDAO {
             var resultSet = statement.getResultSet();
 
             if(resultSet.next()) {
-                entity.setNome(resultSet.getString("nome_employee"));
-                entity.setSalario(resultSet.getBigDecimal("salario_employee"));
-                entity.setSalario(resultSet.getBigDecimal("salario_employee"));
-                var aniversarioInstant = resultSet.getTimestamp("aniversario_employee").toInstant();
+                entity.setNome(resultSet.getString("nome"));
+                entity.setSalario(resultSet.getBigDecimal("salario"));
+                var aniversarioInstant = resultSet.getTimestamp("aniversario").toInstant();
                 entity.setAniversario(OffsetDateTime.ofInstant(aniversarioInstant, ZoneOffset.UTC));
             }
         } catch (SQLException e) {
