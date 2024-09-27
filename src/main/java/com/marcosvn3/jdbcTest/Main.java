@@ -14,7 +14,7 @@ public class Main {
         var flyway = Flyway
                 .configure()
                 // Define a conexão com o banco de dados MySQL
-                .dataSource("jdbc:mysql://localhost:3306/test-jdbc", "root", "144571")
+                .dataSource("jdbc:mysql://localhost:3306/test-jdbc", "root", "0000000")
                 .load();
         // Executa as migrações pendentes no banco de dados
         flyway.migrate();
